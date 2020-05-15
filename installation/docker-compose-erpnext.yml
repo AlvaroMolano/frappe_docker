@@ -1,32 +1,35 @@
 version: '3'
 
 services:
-  erpnext-nginx:
-    image: frappe/erpnext-nginx:${VERSION}
-    restart: on-failure
-    environment:
-      - FRAPPE_PY=erpnext-python
-      - FRAPPE_PY_PORT=8000
-      - FRAPPE_SOCKETIO=frappe-socketio
-      - SOCKETIO_PORT=9000
-      - LETSENCRYPT_HOST=${SITES}
-      - VIRTUAL_HOST=${SITES}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
-    depends_on:
-      - erpnext-python
-      - frappe-socketio
-      - frappe-worker-default
-      - frappe-worker-long
-      - frappe-worker-short
-    links:
-      - erpnext-python
-      - frappe-socketio
-      - frappe-worker-default
-      - frappe-worker-long
-      - frappe-worker-short
-    volumes:
-      - sites-vol:/var/www/html/sites:rw
-      - assets-vol:/assets:rw
+  # erpnext-nginx:
+  #   image: frappe/erpnext-nginx:${VERSION}
+  #   restart: on-failure
+  #   environment:
+  #     - VIRTUAL_PORT=80
+  #     - FRAPPE_PY=erpnext-python
+  #     - FRAPPE_PY_PORT=8000
+  #     - FRAPPE_SOCKETIO=frappe-socketio
+  #     - SOCKETIO_PORT=9000
+  #     - LETSENCRYPT_HOST=${SITES}
+  #     - VIRTUAL_HOST=${SITES}
+  #     - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+  #   depends_on:
+  #     - erpnext-python
+  #     - frappe-socketio
+  #     - frappe-worker-default
+  #     - frappe-worker-long
+  #     - frappe-worker-short
+  #   links:
+  #     - erpnext-python
+  #     - frappe-socketio
+  #     - frappe-worker-default
+  #     - frappe-worker-long
+  #     - frappe-worker-short
+  #   volumes:
+  #     - /data/projects/frappe/volumes/irradiaerp_sites-vol:/var/www/html/sites:rw
+  #     - /data/projects/frappe/volumes/irradiaerp_assets-vol:/assets:rw
+  #   ports:
+  #     - "0.0.0.0:32873:80"
 
   erpnext-python:
     image: frappe/erpnext-worker:${VERSION}
@@ -39,8 +42,11 @@ services:
       - SOCKETIO_PORT=9000
       - AUTO_MIGRATE=1
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
-      - assets-vol:/home/frappe/frappe-bench/sites/assets:rw
+      - /data/projects/frappe/volumes/irradiaerp_apps-vol:/home/frappe/frappe-bench/apps:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_assets-vol:/home/frappe/frappe-bench/sites/assets:rw
+    ports:
+      - "0.0.0.0:32871:8000"
 
   frappe-socketio:
     image: frappe/frappe-socketio:${VERSION}
@@ -50,7 +56,9 @@ services:
     links:
       - redis-socketio
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
+    ports:
+      - "0.0.0.0:32872:9000"
 
   frappe-worker-default:
     image: frappe/erpnext-worker:${VERSION}
@@ -63,7 +71,8 @@ services:
       - redis-queue
       - redis-cache
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_apps-vol:/home/frappe/frappe-bench/apps:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
 
   frappe-worker-short:
     image: frappe/erpnext-worker:${VERSION}
@@ -78,7 +87,8 @@ services:
       - redis-queue
       - redis-cache
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_apps-vol:/home/frappe/frappe-bench/apps:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
 
   frappe-worker-long:
     image: frappe/erpnext-worker:${VERSION}
@@ -93,7 +103,8 @@ services:
       - redis-queue
       - redis-cache
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_apps-vol:/home/frappe/frappe-bench/apps:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
 
   frappe-schedule:
     image: frappe/erpnext-worker:${VERSION}
@@ -106,8 +117,10 @@ services:
       - redis-queue
       - redis-cache
     volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites:rw
+      - /data/projects/frappe/volumes/irradiaerp_apps-vol:/home/frappe/frappe-bench/apps:rw
+      - /data/projects/frappe/volumes/irradiaerp_sites-vol:/home/frappe/frappe-bench/sites:rw
 
-volumes:
-  assets-vol:
-  sites-vol:
+networks:
+  default:
+    external:
+      name: webproxy

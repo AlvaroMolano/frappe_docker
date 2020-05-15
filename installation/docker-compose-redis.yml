@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  redis-cache:
+    image: redis:latest
+    restart: on-failure
+    volumes:
+      - redis-cache-vol:/data
+
+  redis-queue:
+    image: redis:latest
+    restart: on-failure
+    volumes:
+      - redis-queue-vol:/data
+
+  redis-socketio:
+    image: redis:latest
+    restart: on-failure
+    volumes:
+      - redis-socketio-vol:/data
+
+volumes:
+  redis-cache-vol:
+  redis-queue-vol:
+  redis-socketio-vol:
+
+networks:
+  default:
+    external:
+      name: webproxy
